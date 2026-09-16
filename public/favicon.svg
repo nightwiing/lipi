@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Lang Tutor</title>
+  <defs>
+    <linearGradient id="background" x1="70" y1="36" x2="442" y2="476" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7868f2"/>
+      <stop offset="1" stop-color="#4734bd"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#background)"/>
+  <path d="M128 142c0-17.7 14.3-32 32-32h192c17.7 0 32 14.3 32 32v164c0 17.7-14.3 32-32 32h-96l-76 67v-67h-20c-17.7 0-32-14.3-32-32V142Z" fill="#fff"/>
+  <path d="M190 194h132M190 250h88" fill="none" stroke="#5746d9" stroke-width="28" stroke-linecap="round"/>
+</svg>
