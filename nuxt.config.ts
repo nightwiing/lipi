@@ -6,6 +6,10 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', 'shadcn-nuxt', '@vite-pwa/nuxt'],
 
+  runtimeConfig: {
+    geminiApiKey: process.env.G_API_KEY || '',
+  },
+
   css: ['~/assets/css/main.css'],
 
   vite: {

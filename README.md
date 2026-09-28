@@ -11,6 +11,16 @@ pnpm install
 
 ## Development
 
+Add your Google AI API key to `.env`:
+
+```sh
+G_API_KEY=your_google_ai_api_key
+```
+
+The key is used only by the Nitro server route and is not exposed to the browser.
+The tutor currently uses `gemini-3.5-flash-lite` through Google's OpenAI-compatible
+Chat Completions endpoint.
+
 ```sh
 pnpm dev
 ```
