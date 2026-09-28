@@ -1,72 +1,22 @@
+import {
+  tutorResponseSchema,
+  type TutorResponse,
+} from '../../shared/schemas/tutor-response'
+import { createGeminiTutorProvider } from '../providers/gemini-tutor-provider'
+import type { TutorConversationTurn } from '../providers/tutor-provider'
 import { createLanguageSystemPrompt, DEFAULT_LANGUAGE } from '../utils/language-system-prompt'
 
-interface ChatCompletionResponse {
-  choices?: Array<{
-    message?: {
-      content?: string | Array<{ text?: string }>
-    }
-  }>
-}
-
-interface ChatHistoryEntry {
-  userMessage: string
-  response?: string
-}
-
-interface CompletionMessage {
-  role: 'system' | 'user' | 'assistant'
-  content: string
-}
-
-const GEMINI_MODEL = 'gemini-3.5-flash-lite'
-const GEMINI_CHAT_COMPLETIONS_URL =
-  'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
-
-function createCompletionMessages(
-  message: string,
-  language: string,
-  chatHistory: ChatHistoryEntry[],
-) {
-  const messages: CompletionMessage[] = [
-    { role: 'system', content: createLanguageSystemPrompt(language) },
-  ]
-
-  for (const chat of chatHistory) {
-    messages.push({ role: 'user', content: chat.userMessage })
-
-    if (chat.response) {
-      messages.push({ role: 'assistant', content: chat.response })
-    }
+class TutorOutputError extends Error {
+  constructor(
+    readonly code: 'empty-output' | 'invalid-json' | 'invalid-schema',
+    message: string,
+  ) {
+    super(message)
+    this.name = 'TutorOutputError'
   }
-
-  const latestChat = chatHistory.at(-1)
-  if (!latestChat || latestChat.userMessage !== message || latestChat.response) {
-    messages.push({ role: 'user', content: message })
-  }
-
-  return messages
 }
 
-function requestCompletion(
-  apiKey: string,
-  message: string,
-  language: string,
-  chatHistory: ChatHistoryEntry[],
-) {
-  return $fetch<ChatCompletionResponse>(GEMINI_CHAT_COMPLETIONS_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: {
-      model: GEMINI_MODEL,
-      messages: createCompletionMessages(message, language, chatHistory),
-      stream: false,
-    },
-  })
-}
-
-function parseChatHistory(value: unknown): ChatHistoryEntry[] {
+function parseChatHistory(value: unknown): TutorConversationTurn[] {
   if (value === undefined) return []
 
   if (!Array.isArray(value)) {
@@ -78,36 +28,52 @@ function parseChatHistory(value: unknown): ChatHistoryEntry[] {
       throw createError({ statusCode: 400, statusMessage: 'Chat history is invalid.' })
     }
 
-    const userMessage =
-      typeof item.userMessage === 'string' ? item.userMessage.trim() : ''
-    const response =
-      'response' in item && typeof item.response === 'string' ? item.response.trim() : undefined
+    const userMessage = typeof item.userMessage === 'string' ? item.userMessage.trim() : ''
 
     if (!userMessage) {
       throw createError({ statusCode: 400, statusMessage: 'Chat history is invalid.' })
     }
 
-    return {
-      userMessage,
-      ...(response ? { response } : {}),
+    if (!('response' in item) || item.response === null || item.response === undefined) {
+      return { userMessage }
     }
+
+    const response = tutorResponseSchema.safeParse(item.response)
+
+    if (!response.success) {
+      throw createError({ statusCode: 400, statusMessage: 'Chat history is invalid.' })
+    }
+
+    return { userMessage, response: response.data }
   })
 }
 
-function extractResponseContent(response: ChatCompletionResponse) {
-  const content = response.choices?.[0]?.message?.content
-
-  if (typeof content === 'string') return content.trim()
-
-  if (Array.isArray(content)) {
-    return content
-      .map((part) => part.text)
-      .filter((text): text is string => Boolean(text))
-      .join('\n')
-      .trim()
+function parseTutorResponse(content: string): TutorResponse {
+  if (!content) {
+    throw new TutorOutputError('empty-output', 'The model returned an empty response.')
   }
 
-  return ''
+  let parsed: unknown
+
+  try {
+    parsed = JSON.parse(content)
+  } catch {
+    throw new TutorOutputError('invalid-json', 'The model returned invalid JSON.')
+  }
+
+  const response = tutorResponseSchema.safeParse(parsed)
+
+  if (!response.success) {
+    console.error('Tutor response schema validation failed.', {
+      issues: response.error.issues.map((issue) => ({
+        code: issue.code,
+        path: issue.path.join('.'),
+      })),
+    })
+    throw new TutorOutputError('invalid-schema', 'The model response did not match the schema.')
+  }
+
+  return response.data
 }
 
 function findErrorCode(error: unknown) {
@@ -187,19 +153,20 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const provider = createGeminiTutorProvider(apiKey)
+  let output: string
+
   try {
-    const completion = await requestCompletion(apiKey, message, language, chatHistory)
-    const response = extractResponseContent(completion)
-
-    if (!response) {
-      throw new Error('The Gemini API returned an empty response.')
-    }
-
-    return { response }
+    output = await provider.generate({
+      message,
+      systemInstruction: createLanguageSystemPrompt(language),
+      chatHistory,
+    })
   } catch (error) {
     const errorCode = findErrorCode(error)
     const upstreamError = getUpstreamError(error)
-    console.error('Gemini API request failed.', {
+    console.error('Tutor provider request failed.', {
+      provider: 'gemini',
       code: errorCode,
       status: upstreamError?.status,
       message: upstreamError?.message,
@@ -208,21 +175,27 @@ export default defineEventHandler(async (event) => {
     if (['ECONNREFUSED', 'EHOSTUNREACH', 'ENETUNREACH', 'ETIMEDOUT'].includes(errorCode || '')) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'The Gemini API is unreachable.',
-      })
-    }
-
-    if (upstreamError) {
-      const detail = upstreamError.message ? `: ${upstreamError.message}` : ''
-      throw createError({
-        statusCode: 502,
-        statusMessage: `The Gemini API returned ${upstreamError.status}${detail}`,
+        statusMessage: 'The tutor provider is unreachable.',
       })
     }
 
     throw createError({
       statusCode: 502,
-      statusMessage: 'The Gemini API could not complete the request.',
+      statusMessage: 'The tutor provider could not complete the request.',
     })
+  }
+
+  try {
+    return { response: parseTutorResponse(output) }
+  } catch (error) {
+    if (error instanceof TutorOutputError) {
+      console.error('Tutor provider returned unusable output.', { code: error.code })
+      throw createError({
+        statusCode: 502,
+        statusMessage: 'The tutor returned an invalid response.',
+      })
+    }
+
+    throw error
   }
 })

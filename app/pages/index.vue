@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { useChatHistoryStore } from '@/stores/chat-history'
+import type { TutorResponse } from '#shared/schemas/tutor-response'
 
-interface DisplayMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-}
+import TutorResponseView from '@/components/chat/TutorResponse.vue'
+import { useChatHistoryStore } from '@/stores/chat-history'
 
 const message = ref('')
 const language = 'Spanish'
@@ -14,30 +11,8 @@ const isSubmitting = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
 const chatHistoryStore = useChatHistoryStore()
 
-const messages = computed<DisplayMessage[]>(() =>
-  chatHistoryStore.chatHistory.flatMap((chat) => {
-    const exchange: DisplayMessage[] = [
-      {
-        id: `${chat.id}-user`,
-        role: 'user',
-        content: chat.userMessage,
-      },
-    ]
-
-    if (chat.response) {
-      exchange.push({
-        id: `${chat.id}-assistant`,
-        role: 'assistant',
-        content: chat.response,
-      })
-    }
-
-    return exchange
-  }),
-)
-
 const conversationTitle = computed(() => {
-  const firstMessage = messages.value.find((item) => item.role === 'user')?.content
+  const firstMessage = chatHistoryStore.chatHistory[0]?.userMessage
 
   if (!firstMessage) return 'New conversation'
   return firstMessage.length > 32 ? `${firstMessage.slice(0, 32)}…` : firstMessage
@@ -75,7 +50,7 @@ async function submitMessage() {
   await scrollToLatestMessage()
 
   try {
-    const result = await $fetch<{ response: string }>('/api/chat', {
+    const result = await $fetch<{ response: TutorResponse }>('/api/chat', {
       method: 'POST',
       body: {
         message: trimmedMessage,
@@ -112,7 +87,7 @@ async function submitMessage() {
       <nav class="min-h-0 flex-1 overflow-y-auto px-3" aria-label="Conversations">
         <p class="px-2 pb-2 text-xs font-medium text-muted-foreground">Chats</p>
         <button
-          v-if="messages.length"
+          v-if="chatHistoryStore.chatHistory.length"
           type="button"
           class="w-full truncate bg-sidebar-accent px-3 py-2 text-left text-sm text-sidebar-accent-foreground"
         >
@@ -137,7 +112,7 @@ async function submitMessage() {
 
       <main ref="messagesContainer" class="min-h-0 flex-1 overflow-y-auto" aria-live="polite">
         <div
-          v-if="!messages.length"
+          v-if="!chatHistoryStore.chatHistory.length"
           class="mx-auto flex min-h-full max-w-3xl items-center justify-center px-6 py-12 text-center"
         >
           <div class="space-y-2">
@@ -149,22 +124,21 @@ async function submitMessage() {
         </div>
 
         <div v-else class="mx-auto w-full max-w-3xl space-y-6 px-4 py-8 md:px-6">
-          <article
-            v-for="chatMessage in messages"
-            :key="chatMessage.id"
-            class="flex"
-            :class="chatMessage.role === 'user' ? 'justify-end' : 'justify-start'"
-          >
-            <div
-              class="max-w-[85%] space-y-1.5 md:max-w-[75%]"
-              :class="chatMessage.role === 'user' ? 'bg-muted px-4 py-3' : ''"
-            >
-              <p class="text-xs font-medium text-muted-foreground">
-                {{ chatMessage.role === 'user' ? 'You' : 'Lipi' }}
-              </p>
-              <p class="whitespace-pre-wrap text-sm leading-6">{{ chatMessage.content }}</p>
-            </div>
-          </article>
+          <template v-for="chat in chatHistoryStore.chatHistory" :key="chat.id">
+            <article class="flex justify-end">
+              <div class="max-w-[85%] space-y-1.5 bg-muted px-4 py-3 md:max-w-[75%]">
+                <p class="text-xs font-medium text-muted-foreground">You</p>
+                <p class="whitespace-pre-wrap text-sm leading-6">{{ chat.userMessage }}</p>
+              </div>
+            </article>
+
+            <article v-if="chat.response" class="flex justify-start">
+              <div class="max-w-[85%] space-y-1.5 md:max-w-[75%]">
+                <p class="text-xs font-medium text-muted-foreground">Lipi</p>
+                <TutorResponseView :response="chat.response" />
+              </div>
+            </article>
+          </template>
 
           <div v-if="isSubmitting" class="text-sm text-muted-foreground">Lipi is thinking…</div>
           <p v-if="errorMessage" class="text-sm text-destructive">{{ errorMessage }}</p>
