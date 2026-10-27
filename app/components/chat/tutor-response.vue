@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="space-y-4 text-sm leading-6">
+  <div class="min-w-0 space-y-4 break-words text-sm leading-6 [overflow-wrap:anywhere]">
     <section v-if="response.answer.targetText || response.answer.translation || response.answer.explanation">
       <p v-if="response.answer.targetText" class="font-medium">
         {{ response.answer.targetText }}
@@ -30,8 +30,12 @@ defineProps<{
     <section v-if="response.vocabulary.length" class="space-y-2">
       <h3 class="font-medium">Vocabulary</h3>
       <ul class="space-y-2">
-        <li v-for="item in response.vocabulary" :key="`${item.term}-${item.meaning}`" class="border p-3">
-          <div class="flex flex-wrap items-baseline gap-x-2">
+        <li
+          v-for="item in response.vocabulary"
+          :key="`${item.term}-${item.meaning}`"
+          class="min-w-0 border p-2.5 sm:p-3"
+        >
+          <div class="flex min-w-0 flex-wrap items-baseline gap-x-2">
             <span class="font-medium">{{ item.term }}</span>
             <span class="text-xs text-muted-foreground">{{ item.partOfSpeech }}</span>
           </div>

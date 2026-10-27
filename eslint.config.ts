@@ -27,8 +27,7 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
 
   {
-    name: 'app/convention-based-components',
-    files: ['app/components/ui/**/*.vue', 'app/pages/**/*.vue'],
+    name: 'app/component-names',
     rules: {
       'vue/multi-word-component-names': 'off',
     },

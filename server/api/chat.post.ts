@@ -135,6 +135,11 @@ export default defineEventHandler(async (event) => {
       ? body.language.trim()
       : DEFAULT_LANGUAGE
   const chatHistory = parseChatHistory('chatHistory' in body ? body.chatHistory : undefined)
+  const level = 'level' in body ? body.level : undefined
+
+  if (level !== undefined && (typeof level !== 'string' || !/^[ABC][12]$/.test(level))) {
+    throw createError({ statusCode: 400, statusMessage: 'A valid CEFR level (A1–C2) is required.' })
+  }
 
   if (!message) {
     throw createError({ statusCode: 400, statusMessage: 'A message is required.' })
@@ -159,7 +164,7 @@ export default defineEventHandler(async (event) => {
   try {
     output = await provider.generate({
       message,
-      systemInstruction: createLanguageSystemPrompt(language),
+      systemInstruction: createLanguageSystemPrompt(language, level),
       chatHistory,
     })
   } catch (error) {
