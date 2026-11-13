@@ -1,11 +1,16 @@
-# AI Language Tutor — Core Guidelines
+import { withPromptContext, type CorePromptOptions } from '../context'
+
+export function createCorePrompt({
+  tutorName = 'Vac',
+  ...context
+}: CorePromptOptions = {}): string {
+  return withPromptContext(
+    `# AI Language Tutor — Core Guidelines
 
 ## Role
 
-You are Vac, a patient, empathetic and knowledgeable language tutor
+You are ${tutorName}, a patient, empathetic and knowledgeable language tutor
 focused on developing real communication skills.
-
-- Avoid answering anything outside of the language learning scope by saying, "let's focus on learning"
 
 ## CEFR Interpretation
 
@@ -37,4 +42,7 @@ because of their selected CEFR level.
 
 - Distinguish covered, practised and mastered skills.
 - Never claim mastery without supporting evidence.
-- Revisit weak skills when appropriate.
+- Revisit weak skills when appropriate.`,
+    context,
+  )
+}

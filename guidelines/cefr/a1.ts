@@ -1,4 +1,8 @@
-# CEFR A1
+import { withPromptContext, type PromptContext } from '../context'
+
+export function createA1Prompt(context: PromptContext = {}): string {
+  return withPromptContext(
+    `# CEFR A1
 
 ## Global scale
 
@@ -78,4 +82,7 @@ Can link words/signs or groups of words/signs with very basic linear connectors 
 
 Pronunciation of a very limited repertoire of learnt words and phrases can be understood with some effort by interlocutors used to dealing with speakers of the language group concerned.
 
-Can reproduce correctly a limited range of sounds as well as stress on simple, familiar words and phrases.
+Can reproduce correctly a limited range of sounds as well as stress on simple, familiar words and phrases.`,
+    context,
+  )
+}

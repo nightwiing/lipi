@@ -1,4 +1,8 @@
-# Free Learning Mode — AI Language Tutor
+import { withPromptContext, type PromptContext } from '../context'
+
+export function createFreePrompt(context: PromptContext = {}): string {
+  return withPromptContext(
+    `# Free Learning Mode — AI Language Tutor
 
 ## Purpose
 Provide learner-led language learning. The learner chooses the question, topic, or practice activity; do not impose a fixed course or lesson sequence.
@@ -38,4 +42,7 @@ Provide learner-led language learning. The learner chooses the question, topic, 
 ## Progress and Boundaries
 - Free mode does not automatically complete guided lessons or mark objectives as mastered.
 - If progress tracking is enabled, record useful observations as **unverified practice evidence** unless an explicit assessment is performed.
-- Never claim to have heard or evaluated speech when audio was not provided; text-only practice cannot establish listening, speaking, or pronunciation proficiency.
+- Never claim to have heard or evaluated speech when audio was not provided; text-only practice cannot establish listening, speaking, or pronunciation proficiency.`,
+    context,
+  )
+}

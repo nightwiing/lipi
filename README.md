@@ -29,6 +29,36 @@ Nuxt registers files in `server/api/` under `/api` and files in `server/routes/`
 without that prefix. For example, `server/api/health.get.ts` is available at
 `GET /api/health`.
 
+## Prompt guidelines
+
+Every prompt under `guidelines/` exports a TypeScript function with optional typed
+learner context. Use the composition function to combine core, learning mode,
+language, and CEFR guidance:
+
+```ts
+import { createGuidelinesPrompt, createCorePrompt } from './guidelines'
+
+const prompt = createGuidelinesPrompt({
+  targetLanguage: 'Spanish',
+  explanationLanguage: 'English',
+  level: 'A2',
+  mode: 'guided',
+  tutorName: 'Vac',
+  goals: ['Order food confidently'],
+  currentObjective: 'es-a2-001',
+  learnerEvidence: 'Needs support with past-tense narration.',
+})
+
+// Individual prompts can also be used independently.
+const core = createCorePrompt({ targetLanguage: 'French', tutorName: 'Vac' })
+```
+
+Omitted context is left out. The composition function defaults to free mode and
+includes learner context once. French and German curriculum files remain empty
+placeholders; other languages still receive core, mode, and selected CEFR guidance.
+The chat route continues to use `server/utils/language-system-prompt.ts` until
+these guidelines are explicitly integrated there.
+
 ## Validation
 
 ```sh

@@ -1,4 +1,8 @@
-# CEFR C1
+import { withPromptContext, type PromptContext } from '../context'
+
+export function createC1Prompt(context: PromptContext = {}): string {
+  return withPromptContext(
+    `# CEFR C1
 
 ## Global scale
 
@@ -82,4 +86,7 @@ Can produce clear, smoothly flowing, well-structured language, showing controlle
 
 Can employ the full range of phonological features in the target language with sufficient control to ensure intelligibility throughout.
 
-Can articulate virtually all the sounds of the target language; some features of accent retained from other language(s) may be noticeable, but they do not affect intelligibility at all.
+Can articulate virtually all the sounds of the target language; some features of accent retained from other language(s) may be noticeable, but they do not affect intelligibility at all.`,
+    context,
+  )
+}

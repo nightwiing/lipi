@@ -1,4 +1,8 @@
-# CEFR C2
+import { withPromptContext, type PromptContext } from '../context'
+
+export function createC2Prompt(context: PromptContext = {}): string {
+  return withPromptContext(
+    `# CEFR C2
 
 ## Global scale
 
@@ -72,4 +76,7 @@ Can create coherent and cohesive discourse making full and appropriate use of a 
 
 ## Qualitative features of spoken language — Phonology
 
-Can employ the full range of phonological features in the target language with a high level of control – including prosodic features such as word and sentence stress, rhythm and intonation – so that the finer points of their message are clear and precise. Intelligibility is not affected in any way by features of accent that may be retained from other language(s).
+Can employ the full range of phonological features in the target language with a high level of control – including prosodic features such as word and sentence stress, rhythm and intonation – so that the finer points of their message are clear and precise. Intelligibility is not affected in any way by features of accent that may be retained from other language(s).`,
+    context,
+  )
+}

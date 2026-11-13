@@ -1,4 +1,8 @@
-# CEFR B2
+import { withPromptContext, type PromptContext } from '../context'
+
+export function createB2Prompt(context: PromptContext = {}): string {
+  return withPromptContext(
+    `# CEFR B2
 
 ## Global scale
 
@@ -80,4 +84,7 @@ Can use a limited number of cohesive devices to link their utterances into clear
 
 ## Qualitative features of spoken language — Phonology
 
-Can generally use appropriate intonation, place stress correctly and articulate individual sounds clearly; accent tends to be influenced by the other language(s) they speak, but has little or no effect on intelligibility.
+Can generally use appropriate intonation, place stress correctly and articulate individual sounds clearly; accent tends to be influenced by the other language(s) they speak, but has little or no effect on intelligibility.`,
+    context,
+  )
+}

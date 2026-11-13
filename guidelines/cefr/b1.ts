@@ -1,4 +1,8 @@
-# CEFR B1
+import { withPromptContext, type PromptContext } from '../context'
+
+export function createB1Prompt(context: PromptContext = {}): string {
+  return withPromptContext(
+    `# CEFR B1
 
 ## Global scale
 
@@ -82,4 +86,7 @@ Can link a series of shorter, discrete simple elements into a connected, linear 
 
 ## Qualitative features of spoken language — Phonology
 
-Pronunciation is generally intelligible; can approximate intonation and stress at both utterance and word levels. However, accent is usually influenced by the other language(s) they speak.
+Pronunciation is generally intelligible; can approximate intonation and stress at both utterance and word levels. However, accent is usually influenced by the other language(s) they speak.`,
+    context,
+  )
+}

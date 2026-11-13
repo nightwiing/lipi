@@ -1,4 +1,8 @@
-# CEFR A2
+import { withPromptContext, type PromptContext } from '../context'
+
+export function createA2Prompt(context: PromptContext = {}): string {
+  return withPromptContext(
+    `# CEFR A2
 
 ## Global scale
 
@@ -78,4 +82,7 @@ Can link groups of words with simple connectors like “and”, “but” and �
 
 ## Qualitative features of spoken language — Phonology
 
-Pronunciation is generally clear enough to be understood, but conversational partners will need to ask for repetition from time to time. A strong influence from the other language(s) they speak on stress, rhythm and intonation may affect intelligibility, requiring collaboration from interlocutors. Nevertheless, pronunciation of familiar words is clear.
+Pronunciation is generally clear enough to be understood, but conversational partners will need to ask for repetition from time to time. A strong influence from the other language(s) they speak on stress, rhythm and intonation may affect intelligibility, requiring collaboration from interlocutors. Nevertheless, pronunciation of familiar words is clear.`,
+    context,
+  )
+}
