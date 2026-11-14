@@ -15,7 +15,6 @@
     "format": "prettier --write --experimental-cli app/ server/ nuxt.config.ts"
   },
   "dependencies": {
-    "@lucide/vue": "^1.46.0",
     "@pinia/nuxt": "^1.0.2",
     "@vite-pwa/nuxt": "^1.1.1",
     "@vueuse/core": "^15.0.0",
@@ -23,6 +22,7 @@
     "clsx": "^2.1.1",
     "nuxt": "^4.5.2",
     "pinia": "^4.0.2",
+    "reicon-vue": "^1.1.104",
     "reka-ui": "^2.10.4",
     "shadcn-nuxt": "^2.8.2",
     "tailwind-merge": "^3.7.0",

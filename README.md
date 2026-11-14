@@ -29,6 +29,28 @@ Nuxt registers files in `server/api/` under `/api` and files in `server/routes/`
 without that prefix. For example, `server/api/health.get.ts` is available at
 `GET /api/health`.
 
+## Icons
+
+Use the auto-imported `UiIcon` component with a PascalCase icon name from
+[Reicon](https://reicon.dev). Names are checked by TypeScript and update reactively:
+
+```vue
+<UiIcon name="Home" />
+<UiIcon name="ShieldCheck" :size="32" weight="Filled" class="text-primary" />
+<UiIcon :name="isOpen ? 'AltArrowUp' : 'AltArrowDown'" />
+<UiIcon name="Home" label="Home" />
+```
+
+Optional props are `size` (default `24`), `weight` (`Outline` or `Filled`, default
+`Outline`), `color`, `strokeWidth`, and `label`. Icons are decorative by default;
+provide `label` when the icon needs an accessible name. Classes, styles, SVG
+attributes, and event listeners pass through to the SVG. Unknown names render
+nothing.
+
+The component resolves names against the full `reicon-vue` catalog, so using it
+includes the catalog in the bundle. Use `UiIcon` for icons in newly generated
+shadcn components as well; the shadcn CLI does not have a Reicon preset.
+
 ## Prompt guidelines
 
 Every prompt under `guidelines/` exports a TypeScript function with optional typed
